@@ -1,6 +1,6 @@
 # tnm-db
 
-A Node.js CLI tool to backup and restore PostgreSQL databases.
+A Node.js CLI tool to backup and restore PostgreSQL databases and upload files.
 
 ## Installation
 
@@ -22,27 +22,39 @@ A Node.js CLI tool to backup and restore PostgreSQL databases.
    ```
 2. Update the `.env` file with your database credentials. Make sure `DATABASE_CLIENT` is set to `postgres`.
 
+You can also specify the directory to compress or extract with the `FILES_PATH` option (defaults to `./public/uploads`):
+```env
+FILES_PATH=./public/uploads
+```
+
 ## Usage
 
 ### Backup
 
-Create a backup of your database. The backup will be saved in the current directory with a timestamped filename (e.g., `backup_strapi_2026-03-11_04-32-15.dump`).
+Create a backup folder with your database dump. The folder is named using `backup_<dbname>_<YYYY-MM-DD>_<HH-mm-ss>`.
 
 ```bash
 tnm backup
 ```
 
-### Restore
-
-Restore a database from a dump file. Pass the filename as an argument.
+### Backup Directory with Database Dump
+You can optionally compress the current files uploads path along with the SQL database backup.
 
 ```bash
-tnm restore backup_strapi_2026-03-11_04-32-15.dump
+tnm backup --with-files
+```
+
+### Restore
+
+Restore a database (and files) from a backup directory. Pass the directory name as an argument.
+
+```bash
+tnm restore backup_strapi_2026-03-11_04-32-15
 ```
 
 ### Restore Latest
 
-Restore latest backup automatically:
+Restore latest backup folder automatically:
 
 ```bash
 tnm restore-latest

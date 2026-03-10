@@ -1,7 +1,24 @@
+const fs = require('fs');
 const path = require('path');
+const archiver = require('archiver');
 const { execCommand } = require('../utils/exec');
 
-async function backup() {
+async function zipFiles(sourceDir, outPath) {
+  return new Promise((resolve, reject) => {
+    const archive = archiver('zip', { zlib: { level: 9 } });
+    const stream = fs.createWriteStream(outPath);
+
+    stream.on('close', () => resolve());
+    archive.on('error', err => reject(err));
+
+    archive.pipe(stream);
+    archive.directory(sourceDir, false);
+    archive.finalize();
+  });
+}
+
+// Ensure the db dump and zip go into a newly created folder format
+async function backup(options = {}) {
   console.log('Starting backup...');
 
   const dbName = process.env.DATABASE_NAME;
@@ -15,8 +32,14 @@ async function backup() {
   const seconds = String(date.getSeconds()).padStart(2, '0');
 
   const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
-  const filename = `backup_${dbName}_${timestamp}.dump`;
-  const filepath = path.resolve(process.cwd(), filename);
+  const folderName = `backup_${dbName}_${timestamp}`;
+  const dirPath = path.resolve(process.cwd(), folderName);
+
+  console.log(`Creating backup folder: ${folderName}`);
+  fs.mkdirSync(dirPath, { recursive: true });
+
+  const filename = `${folderName}.dump`;
+  const dumpFilePath = path.join(dirPath, filename);
 
   console.log(`Backup file: ${filename}`);
   console.log('Running pg_dump...');
@@ -29,12 +52,29 @@ async function backup() {
     '--format=c',
     '--large-objects',
     '--verbose',
-    '--file', filepath,
+    '--file', dumpFilePath,
     dbName
   ];
 
   try {
     await execCommand(command, args, { PGPASSWORD: process.env.DATABASE_PASSWORD });
+    console.log('Database backup completed successfully.');
+
+    if (options.withFiles) {
+      console.log('Starting files backup...');
+      const filesPathStr = process.env.FILES_PATH || './public/uploads';
+      const filesPath = path.resolve(process.cwd(), filesPathStr);
+      
+      if (fs.existsSync(filesPath)) {
+        console.log(`Compressing files from: ${filesPath}`);
+        const zipFile = path.join(dirPath, 'uploads.zip');
+        await zipFiles(filesPath, zipFile);
+        console.log('Files compressed successfully.');
+      } else {
+        console.log(`Files directory not found at: ${filesPath}. Skipping files backup.`);
+      }
+    }
+
     console.log('Backup completed successfully.');
   } catch (error) {
     console.error('Backup failed:');
