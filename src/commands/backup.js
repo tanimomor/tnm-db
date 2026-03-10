@@ -33,16 +33,16 @@ async function backup(options = {}) {
 
   const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
   const folderName = `backup_${dbName}_${timestamp}`;
-  const dirPath = path.resolve(process.cwd(), folderName);
+  const baseBackupsDir = path.resolve(process.cwd(), 'private/backups');
+  const dirPath = path.join(baseBackupsDir, folderName);
 
-  console.log(`Creating backup folder: ${folderName}`);
+  console.log(`Creating folder ${path.relative(process.cwd(), dirPath)}`);
   fs.mkdirSync(dirPath, { recursive: true });
 
   const filename = `${folderName}.dump`;
   const dumpFilePath = path.join(dirPath, filename);
 
-  console.log(`Backup file: ${filename}`);
-  console.log('Running pg_dump...');
+  console.log(`Running pg_dump...`);
 
   const command = 'pg_dump';
   const args = [
@@ -58,18 +58,18 @@ async function backup(options = {}) {
 
   try {
     await execCommand(command, args, { PGPASSWORD: process.env.DATABASE_PASSWORD });
-    console.log('Database backup completed successfully.');
+    console.log('Database dump created.');
 
     if (options.withFiles) {
-      console.log('Starting files backup...');
+      console.log('Compressing uploads directory...');
       const filesPathStr = process.env.FILES_PATH || './public/uploads';
       const filesPath = path.resolve(process.cwd(), filesPathStr);
       
       if (fs.existsSync(filesPath)) {
-        console.log(`Compressing files from: ${filesPath}`);
-        const zipFile = path.join(dirPath, 'uploads.zip');
+        const zipFileName = `${folderName}.zip`;
+        const zipFile = path.join(dirPath, zipFileName);
         await zipFiles(filesPath, zipFile);
-        console.log('Files compressed successfully.');
+        console.log('Zip archive created.');
       } else {
         console.log(`Files directory not found at: ${filesPath}. Skipping files backup.`);
       }
