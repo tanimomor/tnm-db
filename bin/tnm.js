@@ -17,20 +17,21 @@ program
 program
   .command('backup')
   .description('Backup the PostgreSQL database using pg_dump')
-  .action(() => {
-    backup();
+  .option('--with-files', 'Backup uploads directory along with the database dump')
+  .action((options) => {
+    backup({ withFiles: options.withFiles });
   });
 
 program
-  .command('restore <file>')
-  .description('Restore a PostgreSQL database from a dump file using pg_restore')
-  .action((file) => {
-    restore(file);
+  .command('restore <folder>')
+  .description('Restore a PostgreSQL database and files from a backup folder')
+  .action((folder) => {
+    restore(folder);
   });
 
 program
   .command('restore-latest')
-  .description('Restore the latest PostgreSQL database dump file in the current directory')
+  .description('Restore the latest PostgreSQL database and files from the newest backup folder in the current directory')
   .action(() => {
     restoreLatest();
   });
