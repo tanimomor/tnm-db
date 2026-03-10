@@ -39,3 +39,11 @@ Restore a database from a dump file. Pass the filename as an argument.
 ```bash
 tnm restore backup_20260311_031000.dump
 ```
+
+### Restore Latest
+
+Restore latest backup automatically:
+
+```bash
+tnm restore-latest
+```
