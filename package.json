@@ -1,5 +1,8 @@
 {
-  "name": "tnm-db",
+  "name": "@tanimomor/tnm-db",
+  "publishConfig": {
+    "access": "public"
+  },
   "version": "1.0.0",
   "description": "PostgreSQL Backup and Restore CLI",
   "main": "bin/tnm.js",
