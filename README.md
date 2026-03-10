@@ -31,14 +31,14 @@ FILES_PATH=./public/uploads
 
 ### Backup
 
-Create a backup folder with your database dump. The folder is named using `backup_<dbname>_<YYYY-MM-DD>_<HH-mm-ss>`.
+Create a backup folder with your database dump under `private/backups/`. The folder is named using `backup_<dbname>_<YYYY-MM-DD>_<HH-mm-ss>`.
 
 ```bash
 tnm backup
 ```
 
 ### Backup Directory with Database Dump
-You can optionally compress the current files uploads path along with the SQL database backup.
+You can optionally compress the current files uploads path along with the SQL database backup. The zip will be inside `private/backups/backup_...`.
 
 ```bash
 tnm backup --with-files
@@ -46,7 +46,7 @@ tnm backup --with-files
 
 ### Restore
 
-Restore a database (and files) from a backup directory. Pass the directory name as an argument.
+Restore a database (and files) from a backup directory. Pass the directory name.
 
 ```bash
 tnm restore backup_strapi_2026-03-11_04-32-15
@@ -54,7 +54,7 @@ tnm restore backup_strapi_2026-03-11_04-32-15
 
 ### Restore Latest
 
-Restore latest backup folder automatically:
+Restore latest backup folder automatically under `private/backups/`:
 
 ```bash
 tnm restore-latest

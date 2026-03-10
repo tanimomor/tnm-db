@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const extract = require('extract-zip');
+const unzipper = require('unzipper');
 const { execCommand } = require('../utils/exec');
 
 async function emptyDir(dirPath) {
@@ -11,7 +11,8 @@ async function emptyDir(dirPath) {
 }
 
 async function restore(folder) {
-  const dirPath = path.resolve(process.cwd(), folder);
+  const baseBackupsDir = path.resolve(process.cwd(), 'private/backups');
+  const dirPath = path.isAbsolute(folder) || folder.startsWith('private') ? path.resolve(process.cwd(), folder) : path.join(baseBackupsDir, folder);
 
   if (!fs.existsSync(dirPath) || !fs.statSync(dirPath).isDirectory()) {
     console.error(`Error: Backup folder not found at ${dirPath}`);
@@ -29,7 +30,7 @@ async function restore(folder) {
 
   const dumpFilePath = path.join(dirPath, dumpFile);
 
-  console.log(`Starting restore from folder ${folder}...`);
+  console.log(`Starting restore from folder ${path.basename(dirPath)}...`);
   console.log('Running pg_restore...');
 
   const command = 'pg_restore';
@@ -57,7 +58,12 @@ async function restore(folder) {
       await emptyDir(targetFilesPath);
 
       console.log(`Extracting files to: ${targetFilesPath}`);
-      await extract(zipFilePath, { dir: targetFilesPath });
+      const readStream = fs.createReadStream(zipFilePath);
+      await new Promise((resolve, reject) => {
+        readStream.pipe(unzipper.Extract({ path: targetFilesPath }))
+          .on('close', resolve)
+          .on('error', reject);
+      });
       console.log('Files restore completed successfully.');
     }
 
