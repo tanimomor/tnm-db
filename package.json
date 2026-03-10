@@ -1,0 +1,18 @@
+{
+  "name": "tnm-db",
+  "version": "1.0.0",
+  "description": "PostgreSQL Backup and Restore CLI",
+  "main": "bin/tnm.js",
+  "bin": {
+    "tnm": "./bin/tnm.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "commander": "^12.0.0",
+    "dotenv": "^16.4.5"
+  },
+  "author": "",
+  "license": "ISC"
+}
