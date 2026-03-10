@@ -14,17 +14,20 @@ async function restoreLatest() {
     process.exit(1);
   }
 
-  // Find files matching backup_YYYYMMDD_HHmmss.dump pattern
-  const backupRegex = /^backup_\d{8}_\d{6}\.dump$/;
-  const backupFiles = files.filter((file) => backupRegex.test(file));
+  // Find files matching backup_*.dump pattern
+  const backupFiles = files.filter((file) => /^backup_.*\.dump$/.test(file));
 
   if (backupFiles.length === 0) {
     console.log('No backup files found in the current directory.');
     process.exit(0);
   }
 
-  // Lexicographical sorting works perfectly since format is YYYYMMDD_HHmmss
-  backupFiles.sort().reverse();
+  // Sort by file modified time (newest first)
+  backupFiles.sort((a, b) => {
+    const statA = fs.statSync(path.join(cwd, a));
+    const statB = fs.statSync(path.join(cwd, b));
+    return statB.mtimeMs - statA.mtimeMs;
+  });
 
   const latestBackup = backupFiles[0];
   console.log('Latest backup found:');

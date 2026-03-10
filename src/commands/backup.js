@@ -3,8 +3,9 @@ const { execCommand } = require('../utils/exec');
 
 async function backup() {
   console.log('Starting backup...');
-  console.log('Running pg_dump...');
 
+  const dbName = process.env.DATABASE_NAME;
+  
   const date = new Date();
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
@@ -13,8 +14,12 @@ async function backup() {
   const minutes = String(date.getMinutes()).padStart(2, '0');
   const seconds = String(date.getSeconds()).padStart(2, '0');
 
-  const filename = `backup_${year}${month}${day}_${hours}${minutes}${seconds}.dump`;
+  const timestamp = `${year}-${month}-${day}_${hours}-${minutes}-${seconds}`;
+  const filename = `backup_${dbName}_${timestamp}.dump`;
   const filepath = path.resolve(process.cwd(), filename);
+
+  console.log(`Backup file: ${filename}`);
+  console.log('Running pg_dump...');
 
   const command = 'pg_dump';
   const args = [
@@ -25,13 +30,12 @@ async function backup() {
     '--large-objects',
     '--verbose',
     '--file', filepath,
-    process.env.DATABASE_NAME
+    dbName
   ];
 
   try {
     await execCommand(command, args, { PGPASSWORD: process.env.DATABASE_PASSWORD });
     console.log('Backup completed successfully.');
-    console.log(`File saved: ${filename}`);
   } catch (error) {
     console.error('Backup failed:');
     console.error(error.message);
