@@ -2,7 +2,7 @@ const fs = require('fs');
 const path = require('path');
 const { restore } = require('./restore');
 
-async function restoreLatest() {
+async function restoreLatest(options = {}) {
   console.log('Searching for backup folders...\n');
 
   const backupsDir = path.resolve(process.cwd(), 'private/backups');
@@ -42,7 +42,7 @@ async function restoreLatest() {
   console.log(`${latestBackupFolder}\n`);
 
   // Call the existing restore command
-  await restore(latestBackupFolder);
+  await restore(latestBackupFolder, options);
 }
 
 module.exports = { restoreLatest };

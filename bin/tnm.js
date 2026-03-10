@@ -25,15 +25,17 @@ program
 program
   .command('restore <folder>')
   .description('Restore a PostgreSQL database and files from a backup folder')
-  .action((folder) => {
-    restore(folder);
+  .option('--with-files', 'Restore uploads directory along with the database dump')
+  .action((folder, options) => {
+    restore(folder, { withFiles: options.withFiles });
   });
 
 program
   .command('restore-latest')
   .description('Restore the latest PostgreSQL database and files from the newest backup folder in the current directory')
-  .action(() => {
-    restoreLatest();
+  .option('--with-files', 'Restore uploads directory along with the database dump')
+  .action((options) => {
+    restoreLatest({ withFiles: options.withFiles });
   });
 
 program.parse(process.argv);
