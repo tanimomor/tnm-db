@@ -26,7 +26,7 @@ A Node.js CLI tool to backup and restore PostgreSQL databases.
 
 ### Backup
 
-Create a backup of your database. The backup will be saved in the current directory with a timestamped filename (e.g., `backup_YYYYMMDD_HHmmss.dump`).
+Create a backup of your database. The backup will be saved in the current directory with a timestamped filename (e.g., `backup_strapi_2026-03-11_04-32-15.dump`).
 
 ```bash
 tnm backup
@@ -37,5 +37,13 @@ tnm backup
 Restore a database from a dump file. Pass the filename as an argument.
 
 ```bash
-tnm restore backup_20260311_031000.dump
+tnm restore backup_strapi_2026-03-11_04-32-15.dump
+```
+
+### Restore Latest
+
+Restore latest backup automatically:
+
+```bash
+tnm restore-latest
 ```
