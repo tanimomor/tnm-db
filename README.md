@@ -46,16 +46,28 @@ tnm backup --with-files
 
 ### Restore
 
-Restore a database (and files) from a backup directory. Pass the directory name.
+Restore a database from a backup directory. Pass the directory name.
 
 ```bash
 tnm restore backup_strapi_2026-03-11_04-32-15
 ```
 
+If the backup contains zipped files (e.g. from `--with-files` on backup), you can restore them via:
+
+```bash
+tnm restore backup_strapi_2026-03-11_04-32-15 --with-files
+```
+
 ### Restore Latest
 
-Restore latest backup folder automatically under `private/backups/`:
+Restore latest backup folder database automatically under `private/backups/`:
 
 ```bash
 tnm restore-latest
+```
+
+To restore the latest backup folder along with its zipped uploaded files, use:
+
+```bash
+tnm restore-latest --with-files
 ```

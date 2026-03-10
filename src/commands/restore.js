@@ -10,7 +10,7 @@ async function emptyDir(dirPath) {
   fs.mkdirSync(dirPath, { recursive: true });
 }
 
-async function restore(folder) {
+async function restore(folder, options = {}) {
   const baseBackupsDir = path.resolve(process.cwd(), 'private/backups');
   const dirPath = path.isAbsolute(folder) || folder.startsWith('private') ? path.resolve(process.cwd(), folder) : path.join(baseBackupsDir, folder);
 
@@ -30,8 +30,8 @@ async function restore(folder) {
 
   const dumpFilePath = path.join(dirPath, dumpFile);
 
-  console.log(`Starting restore from folder ${path.basename(dirPath)}...`);
-  console.log('Running pg_restore...');
+  console.log(`Starting restore...`);
+  console.log('Restoring database...');
 
   const command = 'pg_restore';
   const args = [
@@ -45,29 +45,32 @@ async function restore(folder) {
 
   try {
     await execCommand(command, args, { PGPASSWORD: process.env.DATABASE_PASSWORD });
-    console.log('Database restore completed successfully.');
+    console.log('Database restored successfully.');
 
-    const zipFile = files.find(f => f.endsWith('.zip'));
-    if (zipFile) {
-      console.log('Found files backup. Starting files restore...');
-      const zipFilePath = path.join(dirPath, zipFile);
-      const targetFilesPathStr = process.env.FILES_PATH || './public/uploads';
-      const targetFilesPath = path.resolve(process.cwd(), targetFilesPathStr);
+    if (options.withFiles) {
+      const zipFile = files.find(f => f.endsWith('.zip'));
+      if (zipFile) {
+        console.log('Restoring uploaded files...');
+        const zipFilePath = path.join(dirPath, zipFile);
+        const targetFilesPathStr = process.env.FILES_PATH || './public/uploads';
+        const targetFilesPath = path.resolve(process.cwd(), targetFilesPathStr);
 
-      console.log(`Preparing target directory: ${targetFilesPath}`);
-      await emptyDir(targetFilesPath);
+        await emptyDir(targetFilesPath);
+        console.log('Uploads directory cleaned.');
 
-      console.log(`Extracting files to: ${targetFilesPath}`);
-      const readStream = fs.createReadStream(zipFilePath);
-      await new Promise((resolve, reject) => {
-        readStream.pipe(unzipper.Extract({ path: targetFilesPath }))
-          .on('close', resolve)
-          .on('error', reject);
-      });
-      console.log('Files restore completed successfully.');
+        const readStream = fs.createReadStream(zipFilePath);
+        await new Promise((resolve, reject) => {
+          readStream.pipe(unzipper.Extract({ path: targetFilesPath }))
+            .on('close', resolve)
+            .on('error', reject);
+        });
+        console.log('Files extracted successfully.');
+      } else {
+        console.log('No files archive found in the backup folder.');
+      }
     }
 
-    console.log('Restore completed successfully.');
+    console.log('Restore completed.');
   } catch (error) {
     console.error('Restore failed:');
     console.error(error.message);
